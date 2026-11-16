@@ -23,6 +23,9 @@ This guide documents **every** feature in the `pure-vim` configuration, how it w
 15. [Netrw File Explorer](#netrw-file-explorer)
 16. [Mode-Colored Statusline](#mode-colored-statusline)
 17. [Exit Behavior](#exit-behavior)
+18. [Modular Architecture](#modular-architecture)
+19. [Fuzzy Finding (fzf)](#fuzzy-finding-fzf)
+20. [Language Modules (ftplugin)](#language-modules-ftplugin)
 
 ---
 
@@ -460,6 +463,142 @@ autocmd VimLeave * silent! call writefile(["\e[0 q"], '/dev/tty', 'b')
 ```
 
 This prevents the terminal from leaving the cursor as a bar or underline after Vim closes.
+
+---
+
+## Modular Architecture
+
+`pure-vim` supports optional modules that auto-load if present. The core `vimrc` is self-contained and works standalone.
+
+### Directory layout
+
+```
+~/.vim/
+├── vimrc              # Core config (mandatory)
+├── core/              # Optional feature modules
+│   └── fzf.vim        # Floating popup fzf + bat
+└── ftplugin/          # Language-specific modules
+    ├── sh.vim
+    ├── python.vim
+    └── ...
+```
+
+### How modules load
+
+At the end of `vimrc`, a loader:
+
+1. Sets `g:pure_vim_root` to the repo directory
+2. Appends the repo path to `runtimepath` so `ftplugin/` is discovered natively
+3. Sources any files in `core/` that exist (`fzf.vim`, `git.vim`, `format.vim`)
+
+All loads are guarded with `filereadable()` — missing files produce no errors.
+
+### `b:undo_ftplugin` convention
+
+Every `ftplugin/*.vim` defines `b:undo_ftplugin` so Vim can cleanly revert settings when switching buffers.
+
+---
+
+## Fuzzy Finding (fzf)
+
+The `core/fzf.vim` module provides floating popup fzf integration using Vim 8.1+ `popup_create()` and `term_start()`.
+
+### Requirements
+
+- `fzf` binary on `$PATH`
+- `bat` binary for syntax-highlighted previews (optional but recommended)
+- `rg` (ripgrep) for live grep (optional)
+
+### Features
+
+| Function | Leader Key | Description |
+|---|---|---|
+| `s:FzfFiles()` | `<Space>F` | Fuzzy file finder with bat preview |
+| `s:FzfRipgrep()` | `<Space>s` | Live grep with bat line preview |
+| `s:FzfRipgrep(word)` | `<Space>S` | Grep word under cursor |
+| `s:FzfBuffers()` | `<Space>b` | Fuzzy buffer switcher |
+| `s:FzfCommands()` | `<Space>c` | Fuzzy `:command` palette |
+| `s:FzfHelptags()` | `<Space>h` | Fuzzy help tag finder |
+
+### How it works
+
+`FzfPopup(cmd, sink)` creates a centered popup (80% width × 75% height), starts `fzf` inside a hidden terminal buffer attached to the popup, and calls the `sink` callback with the selected line when the process exits.
+
+If `fzf` or `rg` are missing, commands echo a message instead of failing.
+
+---
+
+## Language Modules (ftplugin)
+
+Each `ftplugin/{lang}.vim` is loaded automatically by Vim when opening a file of that type. Modules use `setlocal`, `nnoremap <buffer>`, and define `b:undo_ftplugin`.
+
+### Predictive input strategy (zero-plugin)
+
+1. **`omnifunc`** — Vim's built-in language-aware completion (`<C-x><C-o>`)
+2. **`syntaxcomplete#Complete`** — syntax-driven completion for languages without native omnifunc
+3. **Keyword completion** — `<C-n>` / `<C-p>` from current buffer and includes
+4. **Tags** — `ctags -R`, navigate with `<C-]>` and `<C-t>`
+5. **Include-search** — `[i`, `]i`, `<C-w>i` after setting `include` and `includeexpr`
+
+### Common buffer-local mappings
+
+| Mapping | Action |
+|---|---|
+| `<Space>m` | Lint (`makeprg` → quickfix) |
+| `<Space>=` | Format (`formatprg`) |
+| `<Space>r` | Run in bottom terminal |
+| `<Space>i` | Organize imports (Go) |
+| `<Space>t` | Run tests (Go, Rust) |
+| `<Space>db` | Launch Termdebug (C, C++) |
+
+### Language-specific details
+
+**bash/sh**
+- Lint: `shellcheck` (gcc format)
+- Format: `shfmt -i 4 -ci`
+
+**nix**
+- Lint: `statix check` → fallback `nix-instantiate --parse`
+- Format: `alejandra` → `nixfmt` → `nixpkgs-fmt`
+
+**yaml / yaml.ansible**
+- Lint: `yamllint` / `ansible-lint`
+- Format: `yamlfmt` / `prettier`
+
+**python**
+- Lint: `ruff check` → `flake8`
+- Format: `black` → `autopep8`
+- `omnifunc=python3complete#Complete`
+
+**go**
+- Lint: `staticcheck` → `golint`
+- Format: `gofmt` → `goimports`
+- Uses real tabs (`noexpandtab`)
+
+**rust**
+- Lint: `cargo clippy` → `rustc`
+- Format: `rustfmt`
+
+**c / cpp**
+- Lint/Compile: `clang`/`gcc`, `clang++`/`g++`
+- Format: `clang-format`
+- Debug: native `Termdebug`
+
+**javascript / typescript**
+- Lint: `eslint` / `tsc --noEmit`
+- Format: `prettier`
+
+**lua**
+- Lint: `luac -p`
+- Format: `stylua`
+
+**json**
+- Validate: `jq .`
+- Format: `jq` → `python3 -m json.tool`
+
+**markdown**
+- Format: `prettier --parser markdown` → `mdformat`
+- Preserves trailing whitespace (used for line breaks)
 
 ---
 

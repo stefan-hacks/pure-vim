@@ -2,7 +2,7 @@
 
 # pure-vim
 
-**A single `vimrc`. Zero plugins. Maximum capability.**
+**A single `vimrc`. Optional modules. Zero plugins. Maximum capability.**
 
 Built for Vim 9.1+ on any Linux system — just drop it in and start editing.
 
@@ -14,9 +14,9 @@ Built for Vim 9.1+ on any Linux system — just drop it in and start editing.
 
 `pure-vim` is a carefully crafted, self-contained Vim configuration designed for infrastructure engineers, developers, and anyone who needs a powerful editing environment on machines where they can't (or won't) install plugins.
 
-Everything you need — a modern color scheme, smart search, file exploration, custom commenting, infrastructure syntax support, and more — lives in **one file**.
+The core lives in **one file** (`vimrc`). Optional modules (`core/`, `ftplugin/`) extend it with fuzzy finding, language-specific tooling, and more — but the base config works perfectly standalone.
 
-No plugin manager. No external dependencies. No internet required.
+No plugin manager. No `colors/` directory. No internet required.
 
 ---
 
@@ -78,6 +78,50 @@ Block comment markers defined for: `c`, `cpp`, `java`, `go`, `rust`, `javascript
 
 Line comment strings auto-configured for all infrastructure filetypes.
 
+### 🔎 Fuzzy Finding (Optional — requires `fzf` + `bat`)
+
+If `fzf` is installed, floating popup windows give you IDE-grade file/buffer/search navigation:
+
+| Mapping | Action |
+|---|---|
+| `<Space>F` | Fuzzy file finder with `bat` syntax preview |
+| `<Space>s` | Live ripgrep with `bat` line preview |
+| `<Space>S` | Ripgrep word under cursor |
+| `<Space>b` | Fuzzy buffer switcher |
+| `<Space>c` | Fuzzy command palette |
+| `<Space>h` | Fuzzy help tag finder |
+
+If `fzf` is missing, the base `vimrc` still works — no errors.
+
+### 🧩 Language Modules (ftplugin/)
+
+Auto-loaded modules for 14+ languages. Each provides:
+
+- **Indentation** (tabs/spaces, width)
+- **Lint** (`<Space>m` → populate quickfix)
+- **Format** (`<Space>=` → format entire buffer)
+- **Run** (`<Space>r` → run in bottom terminal)
+- **Completion** (native `omnifunc` or `syntaxcomplete#Complete`)
+- **Include-search** (`[i`, `]i`, `<C-w>i`)
+
+| Language | Lint | Format | Run | Debug |
+|---|---|---|---|---|
+| **bash/sh** | shellcheck | shfmt | — | — |
+| **nix** | statix / nix-instantiate | alejandra / nixfmt / nixpkgs-fmt | — | — |
+| **yaml** | yamllint | yamlfmt / prettier | — | — |
+| **ansible** | ansible-lint | yamlfmt / prettier | ansible-playbook | — |
+| **toml** | taplo | taplo | — | — |
+| **python** | ruff / flake8 | black / autopep8 | python3 | — |
+| **go** | staticcheck / golint | gofmt / goimports | go run/test | — |
+| **rust** | cargo clippy / rustc | rustfmt | cargo run/test | — |
+| **c** | gcc / clang | clang-format | `./%:r` | Termdebug |
+| **cpp** | g++ / clang++ | clang-format | `./%:r` | Termdebug |
+| **javascript** | eslint / jshint | prettier | node | — |
+| **typescript** | tsc | prettier | ts-node | — |
+| **lua** | luac | stylua | lua / luajit | — |
+| **json** | jq | jq / python json.tool | — | — |
+| **markdown** | — | prettier / mdformat | browser preview | — |
+
 ### 📂 Netrw File Explorer
 
 - `<Space>e` opens `Lexplore` (left sidebar tree)
@@ -127,22 +171,25 @@ Gracefully degrades on other terminals.
 
 ## Installation
 
-### One-liner
+### Full Install (with modules)
+
+```bash
+git clone https://github.com/stefan-hacks/pure-vim.git ~/Projects/pure-vim
+cd ~/Projects/pure-vim
+./install.sh
+```
+
+This symlinks the repo into `~/.vim/` so `core/` and `ftplugin/` are discovered.
+
+### Minimal Install (vimrc only)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/stefan-hacks/pure-vim/main/vimrc -o ~/.vimrc
 ```
 
-Or clone and symlink:
-
-```bash
-git clone https://github.com/stefan-hacks/pure-vim.git ~/Projects/pure-vim
-ln -sf ~/Projects/pure-vim/vimrc ~/.vimrc
-```
-
 ### First Run
 
-Vim will automatically create the required directories on first launch:
+Vim automatically creates required directories:
 
 ```
 ~/.vim/undo
@@ -155,12 +202,44 @@ Vim will automatically create the required directories on first launch:
 ## Requirements
 
 - **Vim 9.1** or newer
-- Any Linux terminal ( Kitty recommended for full feature set)
-- Zero plugins. Zero dependencies.
+- Any Linux terminal (Kitty recommended for full feature set)
+- Zero plugins. Zero dependencies for the base config.
+- **Optional:** `fzf` + `bat` for fuzzy finding; `rg` for ripgrep search
+- **Optional:** per-language tools (see Language Modules table above)
+
+---
+
+## Directory Structure
+
+```
+~/.vim/
+├── vimrc              # Main config (single file, works alone)
+├── core/
+│   └── fzf.vim        # Floating popup fzf + bat (optional)
+└── ftplugin/
+    ├── sh.vim         # Bash/Shell
+    ├── nix.vim        # Nix
+    ├── yaml.vim       # YAML
+    ├── yaml.ansible.vim # Ansible
+    ├── toml.vim       # TOML
+    ├── dosini.vim     # INI
+    ├── python.vim     # Python
+    ├── go.vim         # Go
+    ├── rust.vim        # Rust
+    ├── c.vim          # C
+    ├── cpp.vim        # C++
+    ├── javascript.vim # JavaScript
+    ├── typescript.vim # TypeScript
+    ├── lua.vim        # Lua
+    ├── json.vim       # JSON
+    └── markdown.vim   # Markdown
+```
 
 ---
 
 ## Key Mappings
+
+### Global
 
 | Key | Action |
 |---|---|
@@ -170,18 +249,38 @@ Vim will automatically create the required directories on first launch:
 | `<Space>w` | Save file |
 | `<Space>q` | Quit |
 | `<Space>e` | Open file explorer (netrw) |
-| `<Space>\|` | Vertical split |
+| `<Space>\` | Vertical split |
 | `<Space>-` | Horizontal split |
-| `<Space>b` | Buffer list → switch |
-| `<Space>f` | Find file |
 | `<Space>h/j/k/l` | Navigate windows |
 | `Y` | Yank to end of line |
 | `J` / `K` | Move selected lines down/up (visual) |
 | `<` / `>` | Indent and reselect (visual) |
-| `j` / `k` | Wrap-aware movement ( respects `wrap` ) |
+| `j` / `k` | Wrap-aware movement (respects `wrap`) |
 | `0` / `$` | Wrap-aware line boundaries |
 | `<Esc><Esc>` | Clear search highlight |
 | `w!!` | Write with sudo (`:w !sudo tee %`) |
+
+### Fuzzy Finding (requires `fzf`)
+
+| Key | Action |
+|---|---|
+| `<Space>F` | Fuzzy find files |
+| `<Space>s` | Live grep search |
+| `<Space>S` | Grep word under cursor |
+| `<Space>b` | Fuzzy switch buffers |
+| `<Space>c` | Fuzzy command palette |
+| `<Space>h` | Fuzzy help tags |
+
+### Language-Specific (buffer-local)
+
+| Key | Action |
+|---|---|
+| `<Space>m` | Lint current file (quickfix) |
+| `<Space>=` | Format current file |
+| `<Space>r` | Run current file in bottom terminal |
+| `<Space>i` | Organize imports (Go: goimports) |
+| `<Space>t` | Run tests (Go, Rust) |
+| `<Space>db` | Launch Termdebug (C/C++) |
 
 ---
 
@@ -199,13 +298,17 @@ Vim will automatically create the required directories on first launch:
 ├─────────────────────────────────────┤
 │  Custom Commenting Engine             │
 ├─────────────────────────────────────┤
+│  Optional: Fuzzy Finding (fzf)        │
+├─────────────────────────────────────┤
+│  Optional: Language Modules (ftplugin)│
+├─────────────────────────────────────┤
 │  Statusline & Netrw Integration     │
 ├─────────────────────────────────────┤
-│  Persistence (undo, swap, backup)   │
+│  Persistence (undo, swap, backup)     │
 └─────────────────────────────────────┘
 ```
 
-All contained in a single `vimrc` file. No external colors/ directory, no plugin manager, no package manager dependency.
+The core is a single `vimrc`. Optional modules (`core/`, `ftplugin/`) auto-load if present.
 
 ---
 
@@ -218,6 +321,7 @@ All contained in a single `vimrc` file. No external colors/ directory, no plugin
 - Container environments with minimal base images
 - CI/CD runners that need quick editor setup
 - Personal dotfiles you want to keep trivially portable
+- But also **daily development** when you add optional modules for fuzzing, linting, and formatting
 
 ---
 

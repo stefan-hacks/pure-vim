@@ -159,4 +159,52 @@ Auto-detected infrastructure filetypes:
 
 ---
 
+## Fuzzy Finding (requires `fzf`)
+
+| Mapping | Action |
+|---|---|
+| `\u003cSpace\u003eF` | Fuzzy find files (with bat preview) |
+| `\u003cSpace\u003es` | Live grep (with bat line preview) |
+| `\u003cSpace\u003eS` | Grep word under cursor |
+| `\u003cSpace\u003eb` | Fuzzy buffer switcher |
+| `\u003cSpace\u003ec` | Fuzzy command palette |
+| `\u003cSpace\u003eh` | Fuzzy help tags |
+
+---
+
+## Language Module Actions (buffer-local)
+
+| Mapping | Action |
+|---|---|
+| `\u003cSpace\u003em` | Lint → quickfix |
+| `\u003cSpace\u003e=` | Format buffer |
+| `\u003cSpace\u003er` | Run in bottom terminal |
+| `\u003cSpace\u003ei` | Organize imports (Go) |
+| `\u003cSpace\u003et` | Run tests (Go, Rust) |
+| `\u003cSpace\u003edb` | Launch Termdebug (C, C++) |
+
+---
+
+## Language Module Tooling
+
+| Language | Lint | Format | Run | Debug |
+|---|---|---|---|---|
+| bash | shellcheck | shfmt | — | — |
+| nix | statix | alejandra/nixfmt | — | — |
+| yaml | yamllint | yamlfmt | — | — |
+| ansible | ansible-lint | yamlfmt | ansible-playbook | — |
+| toml | taplo | taplo | — | — |
+| python | ruff/flake8 | black | python3 | — |
+| go | staticcheck | gofmt | go run/test | — |
+| rust | cargo clippy | rustfmt | cargo run/test | — |
+| c | gcc/clang | clang-format | `./%:r` | Termdebug |
+| cpp | g++/clang++ | clang-format | `./%:r` | Termdebug |
+| javascript | eslint | prettier | node | — |
+| typescript | tsc | prettier | ts-node | — |
+| lua | luac | stylua | lua | — |
+| json | jq | jq | — | — |
+| markdown | — | prettier | browser | — |
+
+---
+
 *This cheat sheet is maintained alongside the `vimrc`. When features are added, this document is updated to reflect them.*
