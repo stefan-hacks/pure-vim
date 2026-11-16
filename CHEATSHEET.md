@@ -168,7 +168,7 @@ Auto-detected infrastructure filetypes:
 | `\u003cSpace\u003eS` | Grep word under cursor |
 | `\u003cSpace\u003eb` | Fuzzy buffer switcher |
 | `\u003cSpace\u003ec` | Fuzzy command palette |
-| `\u003cSpace\u003eh` | Fuzzy help tags |
+| `\u003cSpace\u003eH` | Fuzzy help tags |
 
 ---
 

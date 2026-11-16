@@ -518,7 +518,7 @@ The `core/fzf.vim` module provides floating popup fzf integration using Vim 8.1+
 | `s:FzfRipgrep(word)` | `<Space>S` | Grep word under cursor |
 | `s:FzfBuffers()` | `<Space>b` | Fuzzy buffer switcher |
 | `s:FzfCommands()` | `<Space>c` | Fuzzy `:command` palette |
-| `s:FzfHelptags()` | `<Space>h` | Fuzzy help tag finder |
+| `s:FzfHelptags()` | `<Space>H` | Fuzzy help tag finder |
 
 ### How it works
 

@@ -163,7 +163,7 @@ If `fzf` is installed, floating popup windows give you IDE-grade file/buffer/sea
 | `<Space>S` | Ripgrep word under cursor |
 | `<Space>b` | Fuzzy buffer switcher |
 | `<Space>c` | Fuzzy command palette |
-| `<Space>h` | Fuzzy help tag finder |
+| `<Space>H` | Fuzzy help tag finder |
 
 If `fzf` is missing, the base `vimrc` still works — no errors.
 
@@ -333,7 +333,7 @@ If you use the Home Manager module or `nix develop`, the following tools are inc
 | `<Space>S` | Grep word under cursor |
 | `<Space>b` | Fuzzy switch buffers |
 | `<Space>c` | Fuzzy command palette |
-| `<Space>h` | Fuzzy help tags |
+| `<Space>H` | Fuzzy help tags |
 
 ### Language-Specific (buffer-local)
 
