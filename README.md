@@ -10,6 +10,80 @@ Built for Vim 9.1+ on any Linux system — just drop it in and start editing.
 
 ---
 
+## Installation
+
+Choose the method that fits your workflow.
+
+### Quick Try — No Install (Nix)
+
+```bash
+# Launch Vim with pure-vim config directly from GitHub
+nix run github:stefan-hacks/pure-vim
+
+# Or clone first, then run locally
+nix run . -- somefile.py
+```
+
+This downloads the flake, opens Vim with the config, and discards everything on exit. Perfect for testing.
+
+---
+
+### Full Install (with modules)
+
+```bash
+git clone https://github.com/stefan-hacks/pure-vim.git ~/Projects/pure-vim
+cd ~/Projects/pure-vim
+./install.sh
+```
+
+This symlinks the repo into `~/.vim/` so `core/` and `ftplugin/` are discovered.
+
+### Minimal Install (vimrc only)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stefan-hacks/pure-vim/main/vimrc -o ~/.vimrc
+```
+
+### Home Manager (Declarative)
+
+```nix
+# In your home-manager configuration
+{ inputs, ... }: {
+  imports = [ inputs.pure-vim.homeManagerModules.default ];
+
+  programs.pure-vim = {
+    enable = true;
+    enableLanguageTools = true;  # Installs fzf, bat, ripgrep, linters, formatters
+  };
+}
+```
+
+Then add the input to your flake:
+
+```nix
+# flake.nix inputs
+pure-vim.url = "github:stefan-hacks/pure-vim";
+```
+
+### NixOS / Nix Profile (Imperative)
+
+```bash
+# Install into your profile
+nix profile install github:stefan-hacks/pure-vim
+
+# Or build the package
+nix build github:stefan-hacks/pure-vim
+```
+
+### Development Shell
+
+```bash
+# Enter a shell with all tools (vim, fzf, bat, ripgrep, linters, formatters)
+nix develop github:stefan-hacks/pure-vim
+```
+
+---
+
 ## What is this?
 
 `pure-vim` is a carefully crafted, self-contained Vim configuration designed for infrastructure engineers, developers, and anyone who needs a powerful editing environment on machines where they can't (or won't) install plugins.
@@ -169,36 +243,6 @@ Gracefully degrades on other terminals.
 
 ---
 
-## Installation
-
-### Full Install (with modules)
-
-```bash
-git clone https://github.com/stefan-hacks/pure-vim.git ~/Projects/pure-vim
-cd ~/Projects/pure-vim
-./install.sh
-```
-
-This symlinks the repo into `~/.vim/` so `core/` and `ftplugin/` are discovered.
-
-### Minimal Install (vimrc only)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/stefan-hacks/pure-vim/main/vimrc -o ~/.vimrc
-```
-
-### First Run
-
-Vim automatically creates required directories:
-
-```
-~/.vim/undo
-~/.vim/swap
-~/.vim/backup
-```
-
----
-
 ## Requirements
 
 - **Vim 9.1** or newer
@@ -206,6 +250,26 @@ Vim automatically creates required directories:
 - Zero plugins. Zero dependencies for the base config.
 - **Optional:** `fzf` + `bat` for fuzzy finding; `rg` for ripgrep search
 - **Optional:** per-language tools (see Language Modules table above)
+
+### Full Tooling (Nix)
+
+If you use the Home Manager module or `nix develop`, the following tools are included:
+
+| Category | Tools |
+|---|---|
+| Fuzzy finding | `fzf`, `bat`, `bat-extras`, `ripgrep`, `fd` |
+| Diff / tags | `delta`, `universal-ctags` |
+| Shell | `shellcheck`, `shfmt` |
+| Nix | `nixfmt-rfc-style`, `alejandra`, `nixpkgs-fmt`, `statix`, `nixd` |
+| YAML / Ansible | `yamllint`, `ansible-lint` |
+| TOML | `taplo` |
+| Python | `ruff`, `black`, `pyright` |
+| Go | `go`, `gopls`, `golangci-lint` |
+| Rust | `rustc`, `cargo`, `rustfmt`, `clippy` |
+| C / C++ | `clang-tools`, `cmake` |
+| JS / TS | `nodejs`, `eslint`, `prettier` |
+| Lua | `stylua`, `lua-language-server` |
+| JSON | `jq` |
 
 ---
 

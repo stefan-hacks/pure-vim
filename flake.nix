@@ -47,27 +47,40 @@
             # Optional but recommended tooling
             fzf
             bat
+            bat-extras
             ripgrep
+            fd
+            delta
+            universal-ctags
             # Language tools
             shellcheck
             shfmt
             nixfmt-rfc-style
             alejandra
             nixpkgs-fmt
+            statix
             yamllint
+            ansible-lint
             taplo
             ruff
             black
+            pyright
             go
             gopls
+            golangci-lint
             rustc
             cargo
             rustfmt
+            clippy
             clang-tools
+            cmake
             nodejs
+            eslint
             prettier
             stylua
+            lua-language-server
             jq
+            nixd
           ];
         };
       })
@@ -116,7 +129,11 @@
             home.packages = lib.mkIf cfg.enableLanguageTools (with pkgs; [
               fzf
               bat
+              bat-extras
               ripgrep
+              fd
+              delta
+              universal-ctags
               # Shell
               shellcheck
               shfmt
@@ -124,25 +141,36 @@
               nixfmt-rfc-style
               alejandra
               nixpkgs-fmt
+              statix
+              nixd
               # YAML / Ansible
               yamllint
+              ansible-lint
               # TOML
               taplo
               # Python
               ruff
               black
+              pyright
               # Go
               go
               gopls
+              golangci-lint
               # Rust
+              rustc
+              cargo
               rustfmt
+              clippy
               # C / C++
               clang-tools
+              cmake
               # JS / TS
               nodejs
+              eslint
               prettier
               # Lua
               stylua
+              lua-language-server
               # JSON
               jq
             ]);
