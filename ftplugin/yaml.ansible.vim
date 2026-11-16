@@ -26,7 +26,8 @@ nnoremap <buffer> <Leader>r :botright term ansible-playbook %<CR>
 
 setlocal omnifunc=syntaxcomplete#Complete
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< indentkeys< foldmethod< foldlevel< cms< mp< efm< fp< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< indentkeys< foldmethod< foldlevel< cms< mp< efm< fp< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< indentkeys< foldmethod< foldlevel< cms< mp< efm< fp< ofu<'

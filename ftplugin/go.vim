@@ -37,7 +37,8 @@ nnoremap <buffer> <Leader>t :botright term go test %:p:h<CR>
 
 setlocal omnifunc=syntaxcomplete#Complete
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< foldmethod< foldlevel< include< includeexpr< mp< efm< fp< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< foldmethod< foldlevel< include< includeexpr< mp< efm< fp< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< foldmethod< foldlevel< include< includeexpr< mp< efm< fp< ofu<'

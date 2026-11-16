@@ -5,7 +5,8 @@ setlocal foldmethod=syntax foldlevel=99
 
 setlocal omnifunc=syntaxcomplete#Complete
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< cms< foldmethod< foldlevel< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< cms< foldmethod< foldlevel< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< cms< foldmethod< foldlevel< ofu<'

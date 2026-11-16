@@ -31,7 +31,8 @@ endif
 
 setlocal omnifunc=syntaxcomplete#Complete
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< cms< isk< include< mp< efm< fp< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< cms< isk< include< mp< efm< fp< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< cms< isk< include< mp< efm< fp< ofu<'

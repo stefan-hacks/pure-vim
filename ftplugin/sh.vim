@@ -4,8 +4,9 @@ setlocal tabstop=4 shiftwidth=4 softtabstop=4 expandtab
 setlocal fileformat=unix
 
 " Include-search for sourced files
-setlocal include=^\.\s*source\s\+\|
-setlocal define=\<function\s\+
+setlocal include=^\s*\.\=\s*source\=\s\+\zs[^;\ ]\+\ze
+setlocal includeexpr=substitute(v:fname,'^\s*source\s\+','','')
+setlocal define=^\s*\(function\s\+\\|[A-Za-z_][A-Za-z0-9_]*\s*(\)\s*{
 
 " Lint: shellcheck
 if executable('shellcheck')
@@ -23,7 +24,8 @@ endif
 " Keywords for completion from syntax
 setlocal omnifunc=syntaxcomplete#Complete
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< ff< include< includeexpr< define< mp< efm< fp< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< ff< include< includeexpr< define< mp< efm< fp< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< ff< include< define< mp< efm< fp< ofu<'

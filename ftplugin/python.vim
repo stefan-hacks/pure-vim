@@ -35,7 +35,8 @@ endif
 " Run current file in bottom terminal
 nnoremap <buffer> <Leader>r :botright term python3 %<CR>
 
-if !exists('b:undo_ftplugin')
-  let b:undo_ftplugin = ''
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< tw< foldmethod< foldlevel< include< includeexpr< define< mp< efm< fp< ofu<'
+else
+  let b:undo_ftplugin = 'setlocal ts< sw< sts< et< tw< foldmethod< foldlevel< include< includeexpr< define< mp< efm< fp< ofu<'
 endif
-let b:undo_ftplugin .= '|setlocal ts< sw< sts< et< tw< foldmethod< foldlevel< include< includeexpr< define< mp< efm< fp< ofu<'
