@@ -609,3 +609,29 @@ augroup CleanExit
   autocmd!
   autocmd VimLeave * silent! call writefile(["\e[0 q"], '/dev/tty', 'b')
 augroup END
+
+" ============================================================
+"  Modular Architecture — pure-vim
+" ============================================================
+" This vimrc supports loading modules from core/ and ftplugin/
+" directories relative to this file.  Each module is optional
+" and gracefully degrades if missing.
+" ------------------------------------------------------------
+" To install: clone this repo and run ./install.sh
+" Or manually: ln -sf /path/to/pure-vim ~/.vim
+" ============================================================
+
+let g:pure_vim_root = expand('<sfile>:p:h')
+
+" Add repo root to runtimepath so ftplugin/ is discovered natively
+if isdirectory(g:pure_vim_root . '/ftplugin')
+  let &runtimepath .= ',' . g:pure_vim_root
+endif
+
+" Source optional core modules (silent! = no error if file missing)
+for s:module in ['fzf', 'git', 'format']
+  let s:modpath = g:pure_vim_root . '/core/' . s:module . '.vim'
+  if filereadable(s:modpath)
+    execute 'source ' . fnameescape(s:modpath)
+  endif
+endfor
