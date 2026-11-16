@@ -129,7 +129,7 @@
             home.packages = lib.mkIf cfg.enableLanguageTools (with pkgs; [
               fzf
               bat
-              bat-extras
+              bat-extras.core
               ripgrep
               fd
               delta
