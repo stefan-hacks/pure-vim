@@ -6,25 +6,26 @@
 " Dependencies: Vim 8.1+ with popup_create() and term_start()
 " ============================================================
 
-" Guard: skip if popup_create is unavailable (older Vim or vi)
+" Guard: skip if popup_create or term_start are unavailable
 if !exists('*popup_create') || !exists('*term_start')
   finish
 endif
 
 let s:has_fzf = executable('fzf')
 let s:has_bat = executable('bat')
+let s:has_rg  = executable('rg')
 
 " ---------- Core popup wrapper ----------
-
+" Runs {cmd} inside a hidden terminal, shows it in a centered popup,
+" and calls {sink}(first_line_of_temp_file) when fzf exits.
 function! s:FzfPopup(cmd, sink) abort
   let l:temp = tempname()
-  let l:full_cmd = a:cmd . ' > ' . shellescape(l:temp)
+  let l:full_cmd = a:cmd . ' > ' . shellescape(l:temp) . '; exit 0'
 
-  " Centered popup: 80% width, 75% height
   let l:width  = max([40, float2nr(&columns * 0.8)])
   let l:height = max([10, float2nr(&lines * 0.75)])
 
-  let l:winid = popup_create('', #{
+  let l:opts = #{
         \ minwidth:  l:width,
         \ maxwidth:  l:width,
         \ minheight: l:height,
@@ -32,20 +33,35 @@ function! s:FzfPopup(cmd, sink) abort
         \ border:    [],
         \ title:     ' fzf ',
         \ wrap:      0,
-        \ })
+        \ }
 
+  " Start hidden terminal buffer, then create popup with it
   let l:bufnr = term_start(['/bin/sh', '-c', l:full_cmd], #{
-        \ hidden:      1,
-        \ term_finish: 'close',
-        \ exit_cb:     {job, status -> s:OnFzfExit(l:winid, l:temp, a:sink)}
+        \ hidden: 1,
+        \ exit_cb: function('s:OnFzfExit', [l:temp, a:sink])
         \ })
 
-  call popup_settext(l:winid, '')
-  call win_execute(l:winid, 'buffer ' . l:bufnr)
+  " Store winid on buffer so the callback can close the popup
+  call setbufvar(l:bufnr, 'purevim_fzf_winid',
+        \ popup_create(l:bufnr, l:opts))
 endfunction
 
-function! s:OnFzfExit(winid, temp, sink) abort
-  call popup_close(a:winid)
+function! s:OnFzfExit(temp, sink, job, status) abort
+  " Locate the popup window via the buffer that owns it
+  let l:bufnr = job_info(a:job).bufnr
+  let l:winid = getbufvar(l:bufnr, 'purevim_fzf_winid', -1)
+
+  " Close popup if still open
+  if l:winid != -1 && popup_getpos(l:winid) != {}
+    call popup_close(l:winid)
+  endif
+
+  " Wipe out the now-dead terminal buffer
+  if bufexists(l:bufnr)
+    silent! execute 'bwipeout! ' . l:bufnr
+  endif
+
+  " Pass result to sink (empty / cancelled selections are ignored)
   if filereadable(a:temp)
     let l:lines = readfile(a:temp)
     call delete(a:temp)
@@ -56,7 +72,6 @@ function! s:OnFzfExit(winid, temp, sink) abort
 endfunction
 
 " ---------- Fuzzy file finder ----------
-
 function! s:FzfFiles() abort
   if !s:has_fzf
     echo '[pure-vim] fzf not found in $PATH'
@@ -72,7 +87,6 @@ endfunction
 nnoremap <silent> <Leader>F :call <SID>FzfFiles()<CR>
 
 " ---------- Live ripgrep + fzf ----------
-
 function! s:OpenRgResult(line) abort
   let l:parts = split(a:line, ':')
   if len(l:parts) >= 2
@@ -85,7 +99,7 @@ function! s:FzfRipgrep(query) abort
     echo '[pure-vim] fzf not found in $PATH'
     return
   endif
-  if !executable('rg')
+  if !s:has_rg
     echo '[pure-vim] ripgrep (rg) not found in $PATH'
     return
   endif
@@ -108,25 +122,24 @@ nnoremap <silent> <Leader>s :call <SID>FzfRipgrep('')<CR>
 nnoremap <silent> <Leader>S :call <SID>FzfRipgrep(expand('<cword>'))<CR>
 
 " ---------- Buffer switcher ----------
-
 function! s:FzfBuffers() abort
   if !s:has_fzf
     echo '[pure-vim] fzf not found in $PATH'
     return
   endif
-  " Build tab-separated list: bufnr<TAB>filename
-  let l:bufs = filter(range(1, bufnr('$')), 'buflisted(v:val) && getbufvar(v:val, "&buftype") ==# ""')
+  let l:bufs = filter(range(1, bufnr('$')),
+        \ 'buflisted(v:val) && getbufvar(v:val, "&buftype") ==# ""')
   let l:names = map(l:bufs, 'v:val . "\t" . bufname(v:val)')
   let l:temp = tempname()
   call writefile(l:names, l:temp)
   let l:cmd = 'cat ' . shellescape(l:temp) . ' | fzf --with-nth=2..'
-  call s:FzfPopup(l:cmd, {line -> execute('buffer ' . fnameescape(split(line, "\t")[0]))})
+  call s:FzfPopup(l:cmd,
+        \ {line -> execute('buffer ' . fnameescape(split(line, "\t")[0]))})
 endfunction
 
 nnoremap <silent> <Leader>b :call <SID>FzfBuffers()<CR>
 
-" ---------- Command palette (fuzzy :command history) ----------
-
+" ---------- Command palette ----------
 function! s:FzfCommands() abort
   if !s:has_fzf
     echo '[pure-vim] fzf not found in $PATH'
@@ -149,7 +162,6 @@ endfunction
 nnoremap <silent> <Leader>c :call <SID>FzfCommands()<CR>
 
 " ---------- Help tags finder ----------
-
 function! s:FzfHelptags() abort
   if !s:has_fzf
     echo '[pure-vim] fzf not found in $PATH'
@@ -173,4 +185,4 @@ function! s:FzfHelptags() abort
   call s:FzfPopup(l:cmd, {line -> execute('help ' . fnameescape(line))})
 endfunction
 
-nnoremap <silent> <Leader>h :call <SID>FzfHelptags()<CR>
+nnoremap <silent> <Leader>H :call <SID>FzfHelptags()<CR>
