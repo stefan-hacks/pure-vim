@@ -55,7 +55,7 @@
             # Language tools
             shellcheck
             shfmt
-            nixfmt-rfc-style
+            nixfmt
             alejandra
             nixpkgs-fmt
             statix
@@ -96,7 +96,7 @@
 
             package = lib.mkOption {
               type = lib.types.package;
-              default = self.packages.${pkgs.system}.default;
+              default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
               description = "The pure-vim package to use.";
             };
 
@@ -138,7 +138,7 @@
               shellcheck
               shfmt
               # Nix
-              nixfmt-rfc-style
+              nixfmt
               alejandra
               nixpkgs-fmt
               statix
